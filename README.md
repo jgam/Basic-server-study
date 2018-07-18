@@ -141,4 +141,8 @@ socket -> bind -> listen -> accept
 2. The server might get some socket options: listen_socekt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 3. The server bindss(assigns a local protocol address to the socket) the adderss: listen_socket.bind(SERVER_ADDRESS)
 (specifying a port number, an IP address, both , or neither.
-4.listen_socket.listen(REQUEST_QUEUE_SIZE)
+4.listen_socket.listen(REQUEST_QUEUE_SIZE)-> the listen method is called by servers and tells the kernel that it should accept incoming connection requests for the socket
+
+Then, the server reads the request data from the connected client socket, prints the data on its standard output and sends a message back to the client. Then, the server closes the client connection and it is ready again to accept a new client connection.
+
+-> 4-Tuple that identifies two endpoints of the TCP connection: the local IP address, local port, foreign IP address, and foreign port
