@@ -38,7 +38,7 @@ URL is the web address!
 -> allows developers to separate choice of a web framework from choice of a web server.
 
 Now, how do we use WSGI? Let's take a look at the following code:
-
+```python
 class WSGIServer(object):
   address_family = socket.AF_INET
   socket_type = socket.SOCK_STREAM
@@ -103,7 +103,7 @@ class WSGIServer(object):
      server = WSGIServer(server_address)
      server.set_app(application)
      return server
-
+```
 This code shown above demonstrates how to implement and to parse the arguments into the right response.
 Now, I create a django framework model and will connect to the program written above.
 Due to the version difference, I had to manually fix some of the changes but they were minimal.
@@ -145,4 +145,70 @@ socket -> bind -> listen -> accept
 
 Then, the server reads the request data from the connected client socket, prints the data on its standard output and sends a message back to the client. Then, the server closes the client connection and it is ready again to accept a new client connection.
 
--> 4-Tuple that identifies two endpoints of the TCP connection: the local IP address, local port, foreign IP address, and foreign port
+## *What about the client side?*
+
+Similar to server side code but even simpler.
+Client does not need to have bind nor accept because, it does not care about the local IP address and the local port number. "The TCP/IP stack within the kernel automatically assigns the local IP address and the local port when the client calls connect, aka ephemeral port. (It uses the port and throws it away.)
+
+## *Two topics need to be covered!*
+### Process
+Is an instance of running program. When server code is implemented, it is loaded into memory and an instance of that executing program is called a process. "Kernel" records a bunch of information about the process including PID, and etc. Outside Note - Iterative server has while True to continuously check requests.
+### File descriptor
+returns non-negative integer by Kernel to a process when it opens an existing file. Simply, Kernel assigns the value.
+Ex) fileno() -> stdin : 0, stdout : 1, stderr : 2
+
+## Iterative server? How to continuously accept requests from client side?
+The answer lies in listen method from socket. The object's BACKLOG arguemnt also known as "REQUEST_QUEUE_SIZE" in the code, determines the size of a queue within the kernel for incoming connection requests. While the server program was sleeping, the second curl argument was able to connect to the server because the kernel had enough space available in the incoming connection request queue for the server socket.
+
+## Check point
+1. Iterative Server
+2. Server socket creation Sequence
+3. Client connection creation sequence
+4. Socket pair
+5. Socket
+6. Ephemeral port and well-known port
+7. Process
+8. PID, PPID, and the parent-child relationship
+9. File Descriptors
+10. The meaning of BACKLOG arguemnt of the listen socket method
+
+## Finally, how to run concurrent server?
+Simply we use fork()
+⋅⋅*call fork once but it returns twice: once in the parent process and once in the child process. When you fork a new process the process ID returned to the child process is 0. When the fork returns in the parent process, it returns the child's PID.
+When a parent forks a new child, the child process gets a copy of the parent's file descriptors.
+*The Kernel uses descriptor reference counts to decide whether to close a socket or not. It closes the socket only when its descriptor reference count becomes 0!*
+Finally, the child process closes the duplicate copy of the parent's listn_socket because the child doesn't care about accepting new client connections, it cares only about processing reqeusts from the established client connection.
+
+> Two events are concurrent if you cannot tell by looking at the program which will happen first
+
+## What if you don't close duplicate socket descriptors in the parent and child processes?
+
+curl not terminated and kept hanging. The duplicate file descriptors allow this to happen. When the child process closed the client connection, the kernel decremented the reference count of that client socket and the count became 1. The termination packet was not sent to the client and the client stayed on the line. 2. It will eventually run out of available file descriptors because there is only limited number of file descriptors available to the server process.
+
+## Are we done? Nope! Another problem!
+Your server should close duplicate descriptors however, that is not it. Zombies! Zombie is a proces that has terminated but its parent has not waited for it and has not received its termination status yet. When a child process exits before its parent, the kernel turns the child process into a zombie and stores some information about the process for its parent process to retrieve later. The info stored is usually PID, process termination status, and the resource usage by the process. Moreover, these zombies will take up space which will limit the memory of the server.
+
+## signal handler to be asynchronously notified of the SIGCHLD
+Asynchronous means that the parent process doesn't know ahead of time that the event is going to happen.
+```python
+signal.signal(signal.SIGCHLD, grim_reaper)
+
+
+```
+This code sets up a SIGCHLD event handler and wait for a terminated child in the event handler!
+
+
+## Interrupted System call??
+This notifies the parent proces and blocks in accept call when the child process exited which caused SIGCHLD event, which in turn activated the sig handler and when the signal handler finished the accept system call got interrupted.
+
+```python
+...
+ if code == errno.EINTR:
+                continue
+            else:
+                raise
+```
+
+We set up a SIGCHLD event handler but instead of wait use a waitpid system call with a WNOHANG option in a loop to ensure that all terminated child processes are taken care of.
+
+### Now the server is run concurrently and I am able to implement frameworks to such server.
