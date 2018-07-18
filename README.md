@@ -11,6 +11,8 @@ Now, simple implementation of a Web server?
 
 once called socket, we can use its families including socket, setsockopt, bind, listen and etc to connect to the server.
 Important note is the loop that keeps digging for the HTTP request!
+
+```python
 while True:
   client_connection, client_address = listen_socket.accept()
   request = client_connection. recv(1024)
@@ -18,6 +20,7 @@ while True:
 ...
 client_connection.seendall(http_response)
 client_connection.close()
+```
 
 This briefly demonstrates how socket works and implements web server in a precise way!
 
