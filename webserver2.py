@@ -1,14 +1,14 @@
+# Tested with Python 2.7.9, Linux & Mac OS X
 import socket
 from io import StringIO
 import sys
+import io
 
 
 class WSGIServer(object):
 
     address_family = socket.AF_INET
-    print('address_family is : ',address_family)
     socket_type = socket.SOCK_STREAM
-    print('socket_type : ', socket_type)
     request_queue_size = 1
 
     def __init__(self, server_address):
@@ -63,8 +63,9 @@ class WSGIServer(object):
         self.finish_response(result)
 
     def parse_request(self, text):
-        request_line = text.splitlines()[0]
+        request_line = text.decode('utf-8').splitlines()[0]
         request_line = request_line.rstrip('\r\n')
+        print(type(request_line))
         # Break down the request line into components
         (self.request_method,  # GET
          self.path,            # /hello
@@ -80,7 +81,7 @@ class WSGIServer(object):
         # Required WSGI variables
         env['wsgi.version']      = (1, 0)
         env['wsgi.url_scheme']   = 'http'
-        env['wsgi.input']        = StringIO.StringIO(self.request_data)
+        env['wsgi.input']        = io.BytesIO(self.request_data)
         env['wsgi.errors']       = sys.stderr
         env['wsgi.multithread']  = False
         env['wsgi.multiprocess'] = False
@@ -112,13 +113,13 @@ class WSGIServer(object):
                 response += '{0}: {1}\r\n'.format(*header)
             response += '\r\n'
             for data in result:
-                response += data
+                response += data.decode('utf-8')
             # Print formatted response data a la 'curl -v'
             print(''.join(
                 '> {line}\n'.format(line=line)
                 for line in response.splitlines()
             ))
-            self.client_connection.sendall(response)
+            self.client_connection.sendall(response.encode())
         finally:
             self.client_connection.close()
 
