@@ -122,4 +122,20 @@ If I add  time.sleep(60) after the code "client_connection.sendall(http_response
 the program automatically sleeps(not stops) for 60 seconds after it sends the connection.
 ex) in different terminals, running the same program within 60 seconds, the latter command will not implement anything.
 
+Back to socket!
+Socket is an abstraction of a communication endpoint and it allows your program to communicate with another program
+using file descriptors.
 
+Socket pair?
+-> 4-Tuple that identifies two endpoints of the TCP connection: the local IP address, local port, foreign IP address, and foreign port.
+-> uniquely identifies every TCP connection on a network
+-> often times, IP address and port number are called socket.
+
+The standard sequence a server goes through to create a socket and start acepting client connections:
+socket -> bind -> listen -> accept
+
+1. The server creates a TCP/IP socket with listen_socket = socket.socekt(socekt.AF_INET, socket.SOCK_STREAM)
+2. The server might get some socket options: listen_socekt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+3. The server bindss(assigns a local protocol address to the socket) the adderss: listen_socket.bind(SERVER_ADDRESS)
+(specifying a port number, an IP address, both , or neither.
+4.listen_socket.listen(REQUEST_QUEUE_SIZE)
