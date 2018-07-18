@@ -102,7 +102,7 @@ class WSGIServer(object):
      return server
 
 This code shown above demonstrates how to implement and to parse the arguments into the right response.
-Now, I create a django framework model and will connect to the program.
+Now, I create a django framework model and will connect to the program written above.
 Due to the version difference, I had to manually fix some of the changes but they were minimal.
 Now when you run the above code taking in parameter as djangoapp:app, it automatically goes into url-> views.py
 which outputs Hello world from django!
@@ -112,3 +112,14 @@ Python Web servers and Python Web Frameworks. It is easy to implement on both th
 
 A Web framewokr uses the information from that dictionary to decide which view to use based on the specified route, 
 request method, where to read the request body from and where to write errors, if any.
+
+# How do I make my server handle more than one request at a time?
+
+3. so far, we created a server that handles one client request at a time.
+
+First thing is first, so let's demonstrate how the latency occurs!
+If I add  time.sleep(60) after the code "client_connection.sendall(http_response),
+the program automatically sleeps(not stops) for 60 seconds after it sends the connection.
+ex) in different terminals, running the same program within 60 seconds, the latter command will not implement anything.
+
+
