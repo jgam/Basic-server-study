@@ -2,7 +2,7 @@
 Strive for progress, not perfection
 
 
-asdfasdf
+asdfa
 1. "... a better developer must get a better understanding of the underlying software systems you use on a daily basis and thati ncludes programming languages, compilers and interpreters, databases and operating systems, web servers and seb frameworks..."
 
 Web Server is a networking server that sits on a physical server and waits for a client to send a request.
