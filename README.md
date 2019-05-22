@@ -1,5 +1,5 @@
 # Basic-server-study
-Strive for progress, not perfection !
+Strive for progress, not perfection
 
 1. "... a better developer must get a better understanding of the underlying software systems you use on a daily basis and thati ncludes programming languages, compilers and interpreters, databases and operating systems, web servers and seb frameworks..."
 
